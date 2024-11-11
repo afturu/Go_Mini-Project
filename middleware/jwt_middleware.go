@@ -7,6 +7,9 @@ import (
 
 func JWTMiddleware() echo.MiddlewareFunc {
     return middleware.JWTWithConfig(middleware.JWTConfig{
-        SigningKey: []byte("secret"),
+        SigningKey:    []byte("secret"), 
+        TokenLookup:   "header:Authorization", 
+        AuthScheme:    "Bearer", 
+        ContextKey:    "user", 
     })
 }
