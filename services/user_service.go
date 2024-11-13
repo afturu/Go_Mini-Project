@@ -2,10 +2,9 @@ package services
 
 import (
     "errors"
-    "time"
-    "github.com/dgrijalva/jwt-go"
     "tukerin-platform/entities"
     "tukerin-platform/repositories"
+    "tukerin-platform/middleware" 
 )
 
 type UserService interface {
@@ -18,10 +17,14 @@ type UserService interface {
 
 type userService struct {
     userRepo repositories.UserRepository
+    jwtUtil  middleware.JwtUsers
 }
 
 func NewUserService(userRepo repositories.UserRepository) UserService {
-    return &userService{userRepo}
+    return &userService{
+        userRepo: userRepo,
+        jwtUtil:  middleware.JwtUsers{},
+    }
 }
 
 func (s *userService) Register(user *entities.User) error {
@@ -34,17 +37,13 @@ func (s *userService) Login(email, password string) (string, error) {
         return "", errors.New("invalid email or password")
     }
 
-    token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-        "user_id": user.ID,
-        "exp":     time.Now().Add(time.Hour * 72).Unix(),
-    })
-
-    tokenString, err := token.SignedString([]byte("your_secret_key"))
+    // Menggunakan fungsi GenerateJWT dari middleware
+    token, err := s.jwtUtil.GenerateJWT(int(user.ID), user.Name)
     if err != nil {
         return "", err
     }
 
-    return tokenString, nil
+    return token, nil
 }
 
 func (s *userService) GetUserByID(id string) (*entities.User, error) {

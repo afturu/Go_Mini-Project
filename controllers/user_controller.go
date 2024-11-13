@@ -5,14 +5,19 @@ import (
     "github.com/labstack/echo/v4"
     "tukerin-platform/services"
     "tukerin-platform/entities"
+    "tukerin-platform/middleware"
 )
 
 type UserController struct {
     userService services.UserService
+    jwtUtil     middleware.JwtUsers
 }
 
 func NewUserController(userService services.UserService) *UserController {
-    return &UserController{userService}
+    return &UserController{
+        userService: userService,
+        jwtUtil:     middleware.JwtUsers{},
+    }
 }
 
 func (uc *UserController) Register(c echo.Context) error {
@@ -46,12 +51,28 @@ func (uc *UserController) Login(c echo.Context) error {
 }
 
 func (uc *UserController) GetUserByID(c echo.Context) error {
-    id := c.Param("id")
-    user, err := uc.userService.GetUserByID(id)
+    // Ambil token dari header Authorization
+    tokenString := c.Request().Header.Get("Authorization")
+    if tokenString == "" {
+        return c.JSON(http.StatusUnauthorized, "Token is missing")
+    }
+
+    // Parsing token untuk mendapatkan klaim
+    claims, err := uc.jwtUtil.ParseJWT(tokenString)
+    if err != nil {
+        return c.JSON(http.StatusUnauthorized, "Unauthorized access")
+    }
+
+    // Gunakan klaim jika diperlukan, contoh:
+    user, err := uc.userService.GetUserByID(c.Param("id"))
     if err != nil {
         return c.JSON(http.StatusNotFound, "User not found")
     }
-    return c.JSON(http.StatusOK, user)
+    
+    return c.JSON(http.StatusOK, map[string]interface{}{
+        "user":  user,
+        "claims": claims,
+    })
 }
 
 func (uc *UserController) UpdateUser(c echo.Context) error {

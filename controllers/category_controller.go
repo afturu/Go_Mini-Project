@@ -15,8 +15,6 @@ func NewCategoryController(categoryService *services.CategoryService) *CategoryC
     return &CategoryController{categoryService}
 }
 
-// Tambahkan fungsi CRUD di sini, seperti CreateCategory, GetCategoryByID, dll.
-
 func (c *CategoryController) CreateCategory(ctx echo.Context) error {
     var category entities.Category
     if err := ctx.Bind(&category); err != nil {
