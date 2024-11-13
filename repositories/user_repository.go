@@ -8,7 +8,7 @@ import (
 type UserRepository interface {
     CreateUser(user *entities.User) error
     FindByEmail(email string) (*entities.User, error)
-    GetUserByID(id string) (*entities.User, error)
+    FindUserByID(id string) (*entities.User, error)
     UpdateUser(id string, user *entities.User) error
     DeleteUser(id string) error
 }
@@ -33,9 +33,9 @@ func (r *userRepository) FindByEmail(email string) (*entities.User, error) {
     return &user, nil
 }
 
-func (r *userRepository) GetUserByID(id string) (*entities.User, error) {
+func (r *userRepository) FindUserByID(id string) (*entities.User, error) {
     var user entities.User
-    if err := r.db.First(&user, "id = ?", id).Error; err != nil {
+    if err := r.db.First(&user, id).Error; err != nil {
         return nil, err
     }
     return &user, nil
@@ -46,5 +46,5 @@ func (r *userRepository) UpdateUser(id string, user *entities.User) error {
 }
 
 func (r *userRepository) DeleteUser(id string) error {
-    return r.db.Delete(&entities.User{}, "id = ?", id).Error
+    return r.db.Delete(&entities.User{}, id).Error
 }

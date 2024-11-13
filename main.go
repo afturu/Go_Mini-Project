@@ -2,7 +2,6 @@ package main
 
 import (
     "github.com/labstack/echo/v4"
-    "github.com/labstack/echo/v4/middleware"
     "tukerin-platform/config"
     "tukerin-platform/controllers"
     "tukerin-platform/middleware"
@@ -15,31 +14,27 @@ func main() {
     db := config.DB
 
     userRepo := repositories.NewUserRepository(db)
-    userService := services.NewUserService(userRepo)
-    userController := controllers.NewUserController(userService)
-
     itemRepo := repositories.NewItemRepository(db)
-    itemService := services.NewItemService(itemRepo)
-    itemController := controllers.NewItemController(itemService)
-
     categoryRepo := repositories.NewCategoryRepository(db)
-    categoryService := services.NewCategoryService(categoryRepo)
-    categoryController := controllers.NewCategoryController(categoryService)
-
     transactionRepo := repositories.NewTransactionRepository(db)
+
+    userService := services.NewUserService(userRepo)
+    itemService := services.NewItemService(itemRepo)
+    categoryService := services.NewCategoryService(categoryRepo)
     transactionService := services.NewTransactionService(transactionRepo)
+
+    userController := controllers.NewUserController(userService)
+    itemController := controllers.NewItemController(itemService)
+    categoryController := controllers.NewCategoryController(categoryService)
     transactionController := controllers.NewTransactionController(transactionService)
 
     e := echo.New()
-
-    e.Use(middleware.Logger())
-    e.Use(middleware.Recover())
 
     e.POST("/register", userController.Register)
     e.POST("/login", userController.Login)
 
     api := e.Group("/api")
-    api.Use(middleware.JWTMiddleware()) 
+    api.Use(middleware.JWTMiddleware())
 
     api.GET("/users/:id", userController.GetUserByID)
     api.PUT("/users/:id", userController.UpdateUser)

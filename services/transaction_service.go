@@ -13,14 +13,14 @@ func NewTransactionService(transactionRepo repositories.TransactionRepository) *
     return &TransactionService{transactionRepo}
 }
 
-func (ts *TransactionService) CreateTransaction(transaction *entities.Transaction) error {
-    return ts.transactionRepo.CreateTransaction(transaction)
+func (s *TransactionService) CreateTransaction(transaction *entities.Transaction) error {
+    return s.transactionRepo.Create(transaction)
 }
 
-func (ts *TransactionService) GetTransactionByID(id string) (*entities.Transaction, error) {
-    return ts.transactionRepo.GetTransactionByID(id)
+func (s *TransactionService) GetTransactionByID(id string) (*entities.Transaction, error) {
+    return s.transactionRepo.FindByID(id)
 }
 
-func (ts *TransactionService) UpdateTransactionStatus(id, status string) error {
-    return ts.transactionRepo.UpdateTransactionStatus(id, status)
+func (s *TransactionService) GetAllTransactions() ([]*entities.Transaction, error) {
+    return s.transactionRepo.FindAll()
 }

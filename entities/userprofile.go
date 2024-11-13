@@ -7,5 +7,4 @@ type UserProfile struct {
     Phone     string `gorm:"type:varchar(20)" json:"phone"`
     Bio       string `gorm:"type:text" json:"bio"`
     ImageURL  string `gorm:"type:varchar(255)" json:"image_url"`
-    User      User   `gorm:"foreignKey:UserID"`
 }

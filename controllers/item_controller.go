@@ -3,15 +3,15 @@ package controllers
 import (
     "net/http"
     "github.com/labstack/echo/v4"
-    "tukerin-platform/entities"
     "tukerin-platform/services"
+    "tukerin-platform/entities"
 )
 
 type ItemController struct {
-    itemService services.ItemService
+    itemService *services.ItemService
 }
 
-func NewItemController(itemService services.ItemService) *ItemController {
+func NewItemController(itemService *services.ItemService) *ItemController {
     return &ItemController{itemService}
 }
 
@@ -47,6 +47,7 @@ func (ic *ItemController) UpdateItem(c echo.Context) error {
     if err := ic.itemService.UpdateItem(id, item); err != nil {
         return c.JSON(http.StatusInternalServerError, "Failed to update item")
     }
+
     return c.JSON(http.StatusOK, "Item updated successfully")
 }
 
@@ -56,4 +57,12 @@ func (ic *ItemController) DeleteItem(c echo.Context) error {
         return c.JSON(http.StatusInternalServerError, "Failed to delete item")
     }
     return c.JSON(http.StatusOK, "Item deleted successfully")
+}
+
+func (ic *ItemController) GetAllItems(c echo.Context) error {
+    items, err := ic.itemService.GetAllItems()
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, "Failed to get items")
+    }
+    return c.JSON(http.StatusOK, items)
 }

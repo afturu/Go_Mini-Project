@@ -1,14 +1,14 @@
 package repositories
 
 import (
-    "tukerin-platform/entities"
     "gorm.io/gorm"
+    "tukerin-platform/entities"
 )
 
 type TransactionRepository interface {
-    CreateTransaction(transaction *entities.Transaction) error
-    GetTransactionByID(id string) (*entities.Transaction, error)
-    UpdateTransactionStatus(id, status string) error
+    Create(transaction *entities.Transaction) error
+    FindByID(id string) (*entities.Transaction, error)
+    FindAll() ([]*entities.Transaction, error)
 }
 
 type transactionRepository struct {
@@ -19,11 +19,11 @@ func NewTransactionRepository(db *gorm.DB) TransactionRepository {
     return &transactionRepository{db}
 }
 
-func (r *transactionRepository) CreateTransaction(transaction *entities.Transaction) error {
+func (r *transactionRepository) Create(transaction *entities.Transaction) error {
     return r.db.Create(transaction).Error
 }
 
-func (r *transactionRepository) GetTransactionByID(id string) (*entities.Transaction, error) {
+func (r *transactionRepository) FindByID(id string) (*entities.Transaction, error) {
     var transaction entities.Transaction
     if err := r.db.First(&transaction, "id = ?", id).Error; err != nil {
         return nil, err
@@ -31,6 +31,10 @@ func (r *transactionRepository) GetTransactionByID(id string) (*entities.Transac
     return &transaction, nil
 }
 
-func (r *transactionRepository) UpdateTransactionStatus(id, status string) error {
-    return r.db.Model(&entities.Transaction{}).Where("id = ?", id).Update("status", status).Error
+func (r *transactionRepository) FindAll() ([]*entities.Transaction, error) {
+    var transactions []*entities.Transaction
+    if err := r.db.Find(&transactions).Error; err != nil {
+        return nil, err
+    }
+    return transactions, nil
 }

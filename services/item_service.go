@@ -13,18 +13,22 @@ func NewItemService(itemRepo repositories.ItemRepository) *ItemService {
     return &ItemService{itemRepo}
 }
 
-func (is *ItemService) CreateItem(item *entities.Item) error {
-    return is.itemRepo.CreateItem(item)
+func (s *ItemService) CreateItem(item *entities.Item) error {
+    return s.itemRepo.Create(item)
 }
 
-func (is *ItemService) GetItemByID(id string) (*entities.Item, error) {
-    return is.itemRepo.GetItemByID(id)
+func (s *ItemService) GetItemByID(id string) (*entities.Item, error) {
+    return s.itemRepo.FindByID(id)
 }
 
-func (is *ItemService) UpdateItem(id string, item *entities.Item) error {
-    return is.itemRepo.UpdateItem(id, item)
+func (s *ItemService) UpdateItem(id string, item *entities.Item) error {
+    return s.itemRepo.Update(id, item)
 }
 
-func (is *ItemService) DeleteItem(id string) error {
-    return is.itemRepo.DeleteItem(id)
+func (s *ItemService) DeleteItem(id string) error {
+    return s.itemRepo.Delete(id)
+}
+
+func (s *ItemService) GetAllItems() ([]*entities.Item, error) {
+    return s.itemRepo.FindAll()
 }

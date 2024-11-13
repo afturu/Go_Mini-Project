@@ -2,45 +2,59 @@ package services
 
 import (
     "errors"
+    "time"
+    "github.com/dgrijalva/jwt-go"
     "tukerin-platform/entities"
     "tukerin-platform/repositories"
-    "tukerin-platform/middleware"
 )
 
-type UserService struct {
+type UserService interface {
+    Register(user *entities.User) error
+    Login(email, password string) (string, error)
+    GetUserByID(id string) (*entities.User, error)
+    UpdateUser(id string, user *entities.User) error
+    DeleteUser(id string) error
+}
+
+type userService struct {
     userRepo repositories.UserRepository
 }
 
-func NewUserService(userRepo repositories.UserRepository) *UserService {
-    return &UserService{userRepo}
+func NewUserService(userRepo repositories.UserRepository) UserService {
+    return &userService{userRepo}
 }
 
-func (us *UserService) Register(user *entities.User) error {
-    return us.userRepo.CreateUser(user)
+func (s *userService) Register(user *entities.User) error {
+    return s.userRepo.CreateUser(user)
 }
 
-func (us *UserService) Login(email, password string) (string, error) {
-    user, err := us.userRepo.FindByEmail(email)
+func (s *userService) Login(email, password string) (string, error) {
+    user, err := s.userRepo.FindByEmail(email)
     if err != nil || user.Password != password {
-        return "", errors.New("invalid credentials")
+        return "", errors.New("invalid email or password")
     }
 
-    token, err := middleware.GenerateJWT(user.ID)
+    token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+        "user_id": user.ID,
+        "exp":     time.Now().Add(time.Hour * 72).Unix(),
+    })
+
+    tokenString, err := token.SignedString([]byte("your_secret_key"))
     if err != nil {
         return "", err
     }
 
-    return token, nil
+    return tokenString, nil
 }
 
-func (us *UserService) GetUserByID(id string) (*entities.User, error) {
-    return us.userRepo.GetUserByID(id)
+func (s *userService) GetUserByID(id string) (*entities.User, error) {
+    return s.userRepo.FindUserByID(id)
 }
 
-func (us *UserService) UpdateUser(id string, user *entities.User) error {
-    return us.userRepo.UpdateUser(id, user)
+func (s *userService) UpdateUser(id string, user *entities.User) error {
+    return s.userRepo.UpdateUser(id, user)
 }
 
-func (us *UserService) DeleteUser(id string) error {
-    return us.userRepo.DeleteUser(id)
+func (s *userService) DeleteUser(id string) error {
+    return s.userRepo.DeleteUser(id)
 }

@@ -3,35 +3,64 @@ package controllers
 import (
     "net/http"
     "github.com/labstack/echo/v4"
-    "tukerin-platform/entities"
     "tukerin-platform/services"
+    "tukerin-platform/entities"
 )
 
 type CategoryController struct {
-    categoryService services.CategoryService
+    categoryService *services.CategoryService
 }
 
-func NewCategoryController(categoryService services.CategoryService) *CategoryController {
+func NewCategoryController(categoryService *services.CategoryService) *CategoryController {
     return &CategoryController{categoryService}
 }
 
-func (cc *CategoryController) CreateCategory(c echo.Context) error {
-    category := new(entities.Category)
-    if err := c.Bind(category); err != nil {
-        return c.JSON(http.StatusBadRequest, "Invalid input")
-    }
+// Tambahkan fungsi CRUD di sini, seperti CreateCategory, GetCategoryByID, dll.
 
-    if err := cc.categoryService.CreateCategory(category); err != nil {
-        return c.JSON(http.StatusInternalServerError, "Failed to create category")
+func (c *CategoryController) CreateCategory(ctx echo.Context) error {
+    var category entities.Category
+    if err := ctx.Bind(&category); err != nil {
+        return ctx.JSON(http.StatusBadRequest, err.Error())
     }
-
-    return c.JSON(http.StatusOK, "Category created successfully")
+    if err := c.categoryService.CreateCategory(&category); err != nil {
+        return ctx.JSON(http.StatusInternalServerError, err.Error())
+    }
+    return ctx.JSON(http.StatusOK, category)
 }
 
-func (cc *CategoryController) GetAllCategories(c echo.Context) error {
-    categories, err := cc.categoryService.GetAllCategories()
+func (c *CategoryController) GetCategoryByID(ctx echo.Context) error {
+    id := ctx.Param("id")
+    category, err := c.categoryService.GetCategoryByID(id)
     if err != nil {
-        return c.JSON(http.StatusInternalServerError, "Failed to retrieve categories")
+        return ctx.JSON(http.StatusNotFound, err.Error())
     }
-    return c.JSON(http.StatusOK, categories)
+    return ctx.JSON(http.StatusOK, category)
+}
+
+func (c *CategoryController) UpdateCategory(ctx echo.Context) error {
+    id := ctx.Param("id")
+    var category entities.Category
+    if err := ctx.Bind(&category); err != nil {
+        return ctx.JSON(http.StatusBadRequest, err.Error())
+    }
+    if err := c.categoryService.UpdateCategory(id, &category); err != nil {
+        return ctx.JSON(http.StatusInternalServerError, err.Error())
+    }
+    return ctx.JSON(http.StatusOK, category)
+}
+
+func (c *CategoryController) DeleteCategory(ctx echo.Context) error {
+    id := ctx.Param("id")
+    if err := c.categoryService.DeleteCategory(id); err != nil {
+        return ctx.JSON(http.StatusInternalServerError, err.Error())
+    }
+    return ctx.NoContent(http.StatusOK)
+}
+
+func (c *CategoryController) GetAllCategories(ctx echo.Context) error {
+    categories, err := c.categoryService.GetAllCategories()
+    if err != nil {
+        return ctx.JSON(http.StatusInternalServerError, err.Error())
+    }
+    return ctx.JSON(http.StatusOK, categories)
 }

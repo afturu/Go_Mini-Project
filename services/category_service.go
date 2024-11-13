@@ -13,10 +13,22 @@ func NewCategoryService(categoryRepo repositories.CategoryRepository) *CategoryS
     return &CategoryService{categoryRepo}
 }
 
-func (cs *CategoryService) CreateCategory(category *entities.Category) error {
-    return cs.categoryRepo.CreateCategory(category)
+func (s *CategoryService) CreateCategory(category *entities.Category) error {
+    return s.categoryRepo.Create(category)
 }
 
-func (cs *CategoryService) GetAllCategories() ([]entities.Category, error) {
-    return cs.categoryRepo.GetAllCategories()
+func (s *CategoryService) GetCategoryByID(id string) (*entities.Category, error) {
+    return s.categoryRepo.FindByID(id)
+}
+
+func (s *CategoryService) UpdateCategory(id string, category *entities.Category) error {
+    return s.categoryRepo.Update(id, category)
+}
+
+func (s *CategoryService) DeleteCategory(id string) error {
+    return s.categoryRepo.Delete(id)
+}
+
+func (s *CategoryService) GetAllCategories() ([]*entities.Category, error) {
+    return s.categoryRepo.FindAll()
 }

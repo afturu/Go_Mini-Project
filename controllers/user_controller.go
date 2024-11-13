@@ -3,8 +3,8 @@ package controllers
 import (
     "net/http"
     "github.com/labstack/echo/v4"
-    "tukerin-platform/entities"
     "tukerin-platform/services"
+    "tukerin-platform/entities"
 )
 
 type UserController struct {
@@ -64,6 +64,7 @@ func (uc *UserController) UpdateUser(c echo.Context) error {
     if err := uc.userService.UpdateUser(id, user); err != nil {
         return c.JSON(http.StatusInternalServerError, "Failed to update user")
     }
+
     return c.JSON(http.StatusOK, "User updated successfully")
 }
 

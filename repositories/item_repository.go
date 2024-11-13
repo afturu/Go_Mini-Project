@@ -1,15 +1,16 @@
 package repositories
 
 import (
-    "tukerin-platform/entities"
     "gorm.io/gorm"
+    "tukerin-platform/entities"
 )
 
 type ItemRepository interface {
-    CreateItem(item *entities.Item) error
-    GetItemByID(id string) (*entities.Item, error)
-    UpdateItem(id string, item *entities.Item) error
-    DeleteItem(id string) error
+    Create(item *entities.Item) error
+    FindByID(id string) (*entities.Item, error)
+    Update(id string, item *entities.Item) error
+    Delete(id string) error
+    FindAll() ([]*entities.Item, error)
 }
 
 type itemRepository struct {
@@ -20,11 +21,11 @@ func NewItemRepository(db *gorm.DB) ItemRepository {
     return &itemRepository{db}
 }
 
-func (r *itemRepository) CreateItem(item *entities.Item) error {
+func (r *itemRepository) Create(item *entities.Item) error {
     return r.db.Create(item).Error
 }
 
-func (r *itemRepository) GetItemByID(id string) (*entities.Item, error) {
+func (r *itemRepository) FindByID(id string) (*entities.Item, error) {
     var item entities.Item
     if err := r.db.First(&item, "id = ?", id).Error; err != nil {
         return nil, err
@@ -32,10 +33,18 @@ func (r *itemRepository) GetItemByID(id string) (*entities.Item, error) {
     return &item, nil
 }
 
-func (r *itemRepository) UpdateItem(id string, item *entities.Item) error {
+func (r *itemRepository) Update(id string, item *entities.Item) error {
     return r.db.Model(&entities.Item{}).Where("id = ?", id).Updates(item).Error
 }
 
-func (r *itemRepository) DeleteItem(id string) error {
-    return r.db.Delete(&entities.Item{}, "id = ?", id).Error
+func (r *itemRepository) Delete(id string) error {
+    return r.db.Delete(&entities.Item{}, id).Error
+}
+
+func (r *itemRepository) FindAll() ([]*entities.Item, error) {
+    var items []*entities.Item
+    if err := r.db.Find(&items).Error; err != nil {
+        return nil, err
+    }
+    return items, nil
 }
