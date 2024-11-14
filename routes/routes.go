@@ -27,11 +27,9 @@ func InitRoutes(e *echo.Echo) {
     transactionService := services.NewTransactionService(transactionRepo)
     transactionController := controllers.NewTransactionController(transactionService)
 
-    // Public routes
     e.POST("/register", userController.Register)
     e.POST("/login", userController.Login)
 
-    // Authenticated routes without middleware
     e.GET("/api/users/:id", userController.GetUserByID)
     e.PUT("/api/users/:id", userController.UpdateUser)
     e.DELETE("/api/users/:id", userController.DeleteUser)
