@@ -9,9 +9,14 @@ import (
 func main() {
     config.InitDB()
 
+    config.LoadEnvironment()
+
     e := echo.New()
 
     routes.InitRoutes(e)
+    routes.WeatherRoutes(e)
+	routes.AIRoutes(e)
+	routes.LocationRoutes(e)
 
     e.Logger.Fatal(e.Start(":8080"))
 }
