@@ -6,6 +6,7 @@ import (
     "os"
     "gorm.io/driver/mysql"
     "gorm.io/gorm"
+    "github.com/joho/godotenv"
     "tukerin-platform/entities"
 )
 
@@ -32,6 +33,13 @@ func InitDB() {
     fmt.Println("Terhubung ke database!")
 
     migrateDB()
+}
+
+func init() {
+    err := godotenv.Load()
+    if err != nil {
+        log.Println("Error loading .env file")
+    }
 }
 
 func migrateDB() {
