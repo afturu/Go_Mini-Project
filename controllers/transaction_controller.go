@@ -42,3 +42,28 @@ func (c *TransactionController) GetAllTransactions(ctx echo.Context) error {
     }
     return ctx.JSON(http.StatusOK, transactions)
 }
+
+func (c *TransactionController) UpdateTransaction(ctx echo.Context) error {
+    id := ctx.Param("id")
+    var transaction entities.Transaction
+    if err := ctx.Bind(&transaction); err != nil {
+        return ctx.JSON(http.StatusBadRequest, err.Error())
+    }
+
+    if err := c.transactionService.UpdateTransaction(id, &transaction); err != nil {
+        return ctx.JSON(http.StatusInternalServerError, err.Error())
+    }
+    return ctx.JSON(http.StatusOK, map[string]string{
+        "message": "Transaction updated successfully",
+    })
+}
+
+func (c *TransactionController) DeleteTransaction(ctx echo.Context) error {
+    id := ctx.Param("id")
+    if err := c.transactionService.DeleteTransaction(id); err != nil {
+        return ctx.JSON(http.StatusInternalServerError, err.Error())
+    }
+    return ctx.JSON(http.StatusOK, map[string]string{
+        "message": "Transaction deleted successfully",
+    })
+}

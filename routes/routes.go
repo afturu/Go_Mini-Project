@@ -27,6 +27,10 @@ func InitRoutes(e *echo.Echo) {
     transactionService := services.NewTransactionService(transactionRepo)
     transactionController := controllers.NewTransactionController(transactionService)
 
+    userProfileRepo := repositories.NewUserProfileRepository(db)
+    userProfileService := services.NewUserProfileService(userProfileRepo)
+    userProfileController := controllers.NewUserProfileController(userProfileService)
+
     e.POST("/register", userController.Register)
     e.POST("/login", userController.Login)
 
@@ -49,4 +53,12 @@ func InitRoutes(e *echo.Echo) {
     e.POST("/api/transactions", transactionController.CreateTransaction)
     e.GET("/api/transactions/:id", transactionController.GetTransactionByID)
     e.GET("/api/transactions", transactionController.GetAllTransactions)
+    e.PUT("/api/transactions/:id", transactionController.UpdateTransaction) 
+    e.DELETE("/api/transactions/:id", transactionController.DeleteTransaction) 
+
+    e.POST("/api/userprofiles", userProfileController.CreateProfile)
+    e.GET("/api/userprofiles", userProfileController.GetAllProfiles)
+    e.GET("/api/userprofiles/:user_id", userProfileController.GetProfileByUserID)
+    e.PUT("/api/userprofiles/:user_id", userProfileController.UpdateProfile)
+    e.DELETE("/api/userprofiles/:user_id", userProfileController.DeleteProfile)
 }

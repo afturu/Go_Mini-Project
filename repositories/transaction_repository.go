@@ -9,6 +9,8 @@ type TransactionRepository interface {
     Create(transaction *entities.Transaction) error
     FindByID(id string) (*entities.Transaction, error)
     FindAll() ([]*entities.Transaction, error)
+    Update(id string, transaction *entities.Transaction) error
+    Delete(id string) error
 }
 
 type transactionRepository struct {
@@ -37,4 +39,20 @@ func (r *transactionRepository) FindAll() ([]*entities.Transaction, error) {
         return nil, err
     }
     return transactions, nil
+}
+
+func (r *transactionRepository) Update(id string, transaction *entities.Transaction) error {
+    if id == "" {
+        return gorm.ErrInvalidTransaction
+    }
+
+    return r.db.Model(&entities.Transaction{}).Where("id = ?", id).Updates(transaction).Error
+}
+
+func (r *transactionRepository) Delete(id string) error {
+    if id == "" {
+        return gorm.ErrInvalidTransaction
+    }
+
+    return r.db.Where("id = ?", id).Delete(&entities.Transaction{}).Error
 }

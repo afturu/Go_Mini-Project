@@ -9,7 +9,7 @@ import (
 
 type UserService interface {
     Register(user *entities.User) error
-    Login(email, password string) (string, error)
+    Login(email, password string) (string, uint, error)
     GetUserByID(id string) (*entities.User, error)
     UpdateUser(id string, user *entities.User) error
     DeleteUser(id string) error
@@ -28,26 +28,32 @@ func NewUserService(userRepo repositories.UserRepository) UserService {
 }
 
 func (s *userService) Register(user *entities.User) error {
-    return s.userRepo.CreateUser(user)
+    return s.userRepo.Register(user)
 }
 
-func (s *userService) Login(email, password string) (string, error) {
-    user, err := s.userRepo.FindByEmail(email)
-    if err != nil || user.Password != password {
-        return "", errors.New("invalid email or password")
+func (s *userService) Login(email, password string) (string, uint, error) {
+    // Cek user berdasarkan email
+    user, err := s.userRepo.Login(email, password)
+    if err != nil {
+        return "", 0, errors.New("invalid email or password")
     }
 
-    // Menggunakan fungsi GenerateJWT dari middleware
+    // Validasi password dengan hashing
+    if !middleware.CheckPasswordHash(password, user.Password) {
+        return "", 0, errors.New("invalid email or password")
+    }
+
+    // Generate JWT menggunakan ID dan nama user
     token, err := s.jwtUtil.GenerateJWT(int(user.ID), user.Name)
     if err != nil {
-        return "", err
+        return "", 0, err
     }
 
-    return token, nil
+    return token, user.ID, nil
 }
 
 func (s *userService) GetUserByID(id string) (*entities.User, error) {
-    return s.userRepo.FindUserByID(id)
+    return s.userRepo.GetUserByID(id)
 }
 
 func (s *userService) UpdateUser(id string, user *entities.User) error {

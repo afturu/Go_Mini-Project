@@ -12,7 +12,14 @@ func GetRecommendations(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Item parameter is required"})
 	}
 
-	response, err := services.FetchRecommendations(item)
+	// Membuat instance dari AIService
+	aiService, err := services.NewAIService()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+
+	// Menggunakan service AI untuk mendapatkan rekomendasi
+	response, err := aiService.FetchRecommendations(item)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}

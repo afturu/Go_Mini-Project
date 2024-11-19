@@ -1,58 +1,49 @@
 package services
 
 import (
-	"bytes"
-	"encoding/json"
-	"errors"
+	"context"
 	"fmt"
-	"net/http"
 	"os"
+	"strings"
+
+	"github.com/google/generative-ai-go/genai"
+	"google.golang.org/api/option"
 )
 
-type OpenAIRequest struct {
-	Prompt    string `json:"prompt"`
-	Model     string `json:"model"`
-	MaxTokens int    `json:"max_tokens"`
+type AIService struct {
+	client *genai.Client
 }
 
-type OpenAIResponse struct {
-	Choices []struct {
-		Text string `json:"text"`
-	} `json:"choices"`
+func NewAIService() (*AIService, error) {
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, option.WithAPIKey(os.Getenv("GEMINI_API_KEY")))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Gemini client: %w", err)
+	}
+	return &AIService{
+		client: client,
+	}, nil
 }
 
-func FetchRecommendations(item string) (string, error) {
-	apiKey := os.Getenv("OPENAI_API_KEY")
-	url := "https://api.openai.com/v1/completions"
-
+func (service *AIService) FetchRecommendations(item string) (string, error) {
 	prompt := fmt.Sprintf("Berikan rekomendasi barang untuk kategori: %s", item)
-	requestBody := OpenAIRequest{
-		Prompt:    prompt,
-		Model:     "text-davinci-003",
-		MaxTokens: 100,
-	}
+	ctx := context.Background()
+	model := service.client.GenerativeModel("gemini-1.5-flash")
 
-	jsonBody, _ := json.Marshal(requestBody)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
+	resp, err := model.GenerateContent(ctx, genai.Text(prompt))
 	if err != nil {
-		return "", errors.New("failed to create request")
-	}
-	req.Header.Set("Authorization", "Bearer "+apiKey)
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", errors.New("failed to call OpenAI API")
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return "", errors.New("OpenAI API call failed")
+		return "", fmt.Errorf("failed to generate content: %w", err)
 	}
 
-	var openAIResp OpenAIResponse
-	json.NewDecoder(resp.Body).Decode(&openAIResp)
+	var result string
+	for _, cand := range resp.Candidates {
+		if cand.Content != nil {
+			for _, part := range cand.Content.Parts {
+				result += fmt.Sprintf("%s", part)
+			}
+		}
+	}
 
-	return openAIResp.Choices[0].Text, nil
+	result = strings.ReplaceAll(result, "\n", "")
+	return result, nil
 }

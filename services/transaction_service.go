@@ -24,3 +24,11 @@ func (s *TransactionService) GetTransactionByID(id string) (*entities.Transactio
 func (s *TransactionService) GetAllTransactions() ([]*entities.Transaction, error) {
     return s.transactionRepo.FindAll()
 }
+
+func (s *TransactionService) UpdateTransaction(id string, transaction *entities.Transaction) error {
+    return s.transactionRepo.Update(id, transaction)
+}
+
+func (s *TransactionService) DeleteTransaction(id string) error {
+    return s.transactionRepo.Delete(id)
+}

@@ -1,21 +1,34 @@
 package controllers
 
 import (
-	"tukerin-platform/services"
-	"github.com/labstack/echo/v4"
-	"net/http"
+    "net/http"
+    "tukerin-platform/services"
+
+    "github.com/labstack/echo/v4"
 )
 
-func GetWeather(c echo.Context) error {
-	city := c.QueryParam("city")
-	if city == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "City parameter is required"})
-	}
+type WeatherController struct {
+    weatherService *services.WeatherService
+}
 
-	response, err := services.FetchWeather(city)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
-	}
+func NewWeatherController(weatherService *services.WeatherService) *WeatherController {
+    return &WeatherController{weatherService}
+}
 
-	return c.JSON(http.StatusOK, response)
+func (wc *WeatherController) GetWeather(ctx echo.Context) error {
+    city := ctx.QueryParam("city")
+    if city == "" {
+        return ctx.JSON(http.StatusBadRequest, map[string]string{
+            "error": "City parameter is required",
+        })
+    }
+
+    weather, err := wc.weatherService.GetCurrentWeather(city)
+    if err != nil {
+        return ctx.JSON(http.StatusInternalServerError, map[string]string{
+            "error": err.Error(),
+        })
+    }
+
+    return ctx.JSON(http.StatusOK, weather)
 }

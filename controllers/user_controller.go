@@ -1,11 +1,13 @@
 package controllers
 
 import (
-    "net/http"
-    "github.com/labstack/echo/v4"
-    "tukerin-platform/services"
-    "tukerin-platform/entities"
-    "tukerin-platform/middleware"
+	"net/http"
+	"strings"
+	"tukerin-platform/entities"
+	"tukerin-platform/middleware"
+	"tukerin-platform/services"
+
+	"github.com/labstack/echo/v4"
 )
 
 type UserController struct {
@@ -34,43 +36,53 @@ func (uc *UserController) Register(c echo.Context) error {
 }
 
 func (uc *UserController) Login(c echo.Context) error {
-    var loginData struct {
-        Email    string `json:"email"`
-        Password string `json:"password"`
-    }
-    if err := c.Bind(&loginData); err != nil {
+    // Bind input data ke struct User
+    user := new(entities.User)
+    if err := c.Bind(user); err != nil {
         return c.JSON(http.StatusBadRequest, "Invalid input")
     }
 
-    token, err := uc.userService.Login(loginData.Email, loginData.Password)
+    // Panggil Login dari UserService untuk mendapatkan token dan userID
+    token, userID, err := uc.userService.Login(user.Email, user.Password)
     if err != nil {
         return c.JSON(http.StatusUnauthorized, err.Error())
     }
 
-    return c.JSON(http.StatusOK, map[string]string{"token": token})
+    // Return respons dengan token dan userID
+    return c.JSON(http.StatusOK, map[string]interface{}{
+        "token":   token,
+        "user_id": userID,
+    })
 }
 
 func (uc *UserController) GetUserByID(c echo.Context) error {
     // Ambil token dari header Authorization
     tokenString := c.Request().Header.Get("Authorization")
     if tokenString == "" {
-        return c.JSON(http.StatusUnauthorized, "Token is missing")
+        return c.JSON(http.StatusUnauthorized, map[string]interface{}{
+            "message": "Token is missing",
+        })
     }
 
     // Parsing token untuk mendapatkan klaim
-    claims, err := uc.jwtUtil.ParseJWT(tokenString)
+    claims, err := uc.jwtUtil.ParseJWT(strings.TrimPrefix(tokenString, "Bearer "))
     if err != nil {
-        return c.JSON(http.StatusUnauthorized, "Unauthorized access")
+        return c.JSON(http.StatusUnauthorized, map[string]interface{}{
+            "message": "Unauthorized access",
+        })
     }
 
-    // Gunakan klaim jika diperlukan, contoh:
+    // Ambil User berdasarkan ID dari parameter
     user, err := uc.userService.GetUserByID(c.Param("id"))
     if err != nil {
-        return c.JSON(http.StatusNotFound, "User not found")
+        return c.JSON(http.StatusNotFound, map[string]interface{}{
+            "message": "User not found",
+        })
     }
-    
+
+    // Return user dan klaim JWT
     return c.JSON(http.StatusOK, map[string]interface{}{
-        "user":  user,
+        "user":   user,
         "claims": claims,
     })
 }
