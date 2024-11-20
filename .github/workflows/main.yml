@@ -29,19 +29,19 @@ jobs:
               run: |
                 echo "${{secrets.ENV}}" >> .env
             - name: build docker
-              run: docker build -t ilhanmansiz/tukerin_platform:1.0.0 .
+              run: docker build -t ilhanmansiz/tukerin:1.0.0 .
             - name: docker hub login
               uses: docker/login-action@v1
               with: 
                 username: ${{secrets.DOCKER_USER}}
                 password: ${{secrets.DOCKER_TOKEN}}
             - name: push image
-              run: docker push ilhanmansiz/tukerin_platform:1.0.0
+              run: docker push ilhanmansiz/tukerin:1.0.0
     deploy:
       needs: build-and-push-docker
       runs-on: ubuntu-latest
       env:
-        IMAGE_URI: 'ilhanmansiz/tukerin_platform:1.0.0'
+        IMAGE_URI: 'ilhanmansiz/tukerin:1.0.0'
         EC2_HOST: ${{ secrets.EC2_HOST }}
         EC2_USER: ${{ secrets.EC2_USER }}
 
@@ -65,7 +65,7 @@ jobs:
               sudo docker pull $IMAGE_URI
 
               # Run the new container
-              sudo docker run -d --name my-container -p 8080:8081 $IMAGE_URI
+              sudo docker run -d --name my-container -p 8080:8080 $IMAGE_URI
             EOF
 
         - name: Clean up PEM file
