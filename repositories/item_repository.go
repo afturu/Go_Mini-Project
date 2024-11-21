@@ -27,7 +27,7 @@ func (r *itemRepository) Create(item *entities.Item) error {
 
 func (r *itemRepository) FindByID(id string) (*entities.Item, error) {
     var item entities.Item
-    if err := r.db.First(&item, "id = ?", id).Error; err != nil {
+    if err := r.db.Preload("User").Preload("Category").First(&item, "id = ?", id).Error; err != nil {
         return nil, err
     }
     return &item, nil
