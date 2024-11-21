@@ -16,4 +16,5 @@ type Item struct {
     UpdatedAt   time.Time `json:"updated_at"`
     User        User      `gorm:"foreignKey:UserID"`
     Category    Category  `gorm:"foreignKey:CategoryID"`
+    UserProfile UserProfile `gorm:"foreignKey:UserID;references:UserID" json:"user_profile"`
 }
