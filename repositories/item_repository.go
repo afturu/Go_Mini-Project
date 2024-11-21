@@ -27,7 +27,7 @@ func (r *itemRepository) Create(item *entities.Item) error {
 
 func (r *itemRepository) FindByID(id string) (*entities.Item, error) {
     var item entities.Item
-    if err := r.db.Preload("User").Preload("Category").Preload("Profile").First(&item, "id = ?", id).Error; err != nil {
+    if err := r.db.Preload("User").Preload("Category").Preload("UserProfile").First(&item, "id = ?", id).Error; err != nil {
         return nil, err
     }
     return &item, nil
@@ -43,7 +43,7 @@ func (r *itemRepository) Delete(id string) error {
 
 func (r *itemRepository) FindAll() ([]*entities.Item, error) {
     var items []*entities.Item
-    if err := r.db.Preload("User").Preload("Category").Preload("Profile").Find(&items).Error; err != nil {
+    if err := r.db.Preload("User").Preload("Category").Preload("UserProfile").Find(&items).Error; err != nil {
         return nil, err
     }
     return items, nil
