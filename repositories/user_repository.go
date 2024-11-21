@@ -54,7 +54,7 @@ func (r *userRepository) GetUserByID(id string) (*entities.User, error) {
 
     // Cari user berdasarkan ID
     var user entities.User
-    if err := r.db.First(&user, "id = ?", id).Error; err != nil {
+    if err := r.db.Preload("UserProfile").First(&user, "id = ?", id).Error; err != nil {
         if errors.Is(err, gorm.ErrRecordNotFound) {
             return nil, errors.New("user not found")
         }
