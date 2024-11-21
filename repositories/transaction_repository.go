@@ -22,12 +22,12 @@ func NewTransactionRepository(db *gorm.DB) TransactionRepository {
 }
 
 func (r *transactionRepository) Create(transaction *entities.Transaction) error {
-    return r.db.Create(transaction).Error
+    return r.db.Preload("User").Preload("Category").Preload("UserProfile").Create(transaction).Error
 }
 
 func (r *transactionRepository) FindByID(id string) (*entities.Transaction, error) {
     var transaction entities.Transaction
-    if err := r.db.First(&transaction, "id = ?", id).Error; err != nil {
+    if err := r.db.Preload("User").Preload("Category").Preload("UserProfile").First(&transaction, "id = ?", id).Error; err != nil {
         return nil, err
     }
     return &transaction, nil
@@ -35,7 +35,7 @@ func (r *transactionRepository) FindByID(id string) (*entities.Transaction, erro
 
 func (r *transactionRepository) FindAll() ([]*entities.Transaction, error) {
     var transactions []*entities.Transaction
-    if err := r.db.Find(&transactions).Error; err != nil {
+    if err := r.db.Preload("User").Preload("Category").Preload("UserProfile").Find(&transactions).Error; err != nil {
         return nil, err
     }
     return transactions, nil
@@ -46,7 +46,7 @@ func (r *transactionRepository) Update(id string, transaction *entities.Transact
         return gorm.ErrInvalidTransaction
     }
 
-    return r.db.Model(&entities.Transaction{}).Where("id = ?", id).Updates(transaction).Error
+    return r.db.Preload("User").Preload("Category").Preload("UserProfile").Model(&entities.Transaction{}).Where("id = ?", id).Updates(transaction).Error
 }
 
 func (r *transactionRepository) Delete(id string) error {

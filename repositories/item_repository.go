@@ -22,7 +22,7 @@ func NewItemRepository(db *gorm.DB) ItemRepository {
 }
 
 func (r *itemRepository) Create(item *entities.Item) error {
-    return r.db.Create(item).Error
+    return r.db.Preload("User").Preload("Category").Preload("UserProfile").Create(item).Error
 }
 
 func (r *itemRepository) FindByID(id string) (*entities.Item, error) {
@@ -34,7 +34,7 @@ func (r *itemRepository) FindByID(id string) (*entities.Item, error) {
 }
 
 func (r *itemRepository) Update(id string, item *entities.Item) error {
-    return r.db.Model(&entities.Item{}).Where("id = ?", id).Updates(item).Error
+    return r.db.Preload("User").Preload("Category").Preload("UserProfile").Model(&entities.Item{}).Where("id = ?", id).Updates(item).Error
 }
 
 func (r *itemRepository) Delete(id string) error {
